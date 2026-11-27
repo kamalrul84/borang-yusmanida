@@ -77,12 +77,12 @@ aside{position:sticky;top:12px;align-self:start}
       <div><label for="wano">No. WhatsApp penerima (pilihan)</label><input id="wano" inputmode="tel" placeholder="cth: 0123456789"></div>
     </div>
     <div class="bar">
-      <button class="btn go biz" id="pdf" type="button">Hantar PDF</button>
+      <button class="btn go biz" id="pdf" type="button">Hantar PDF (5 borang)</button>
       <a class="btn go" id="send" href="#" target="_blank" rel="noopener">WhatsApp (teks)</a>
       <button class="btn cp" id="copy" type="button">Salin teks</button>
       <button class="btn rs" id="reset" type="button">Kosongkan</button>
     </div>
-    <p class="note">Teks dihantar dalam format monospace (```), jadi titik bertindih dan nombor lurus ikut kolum dalam WhatsApp. Kosongkan nombor untuk pilih kenalan sendiri. <b>Hantar PDF</b> buka menu kongsi phone – pilih WA Business atau WhatsApp.</p>
+    <p class="note">Teks dihantar dalam format monospace (```), jadi titik bertindih dan nombor lurus ikut kolum dalam WhatsApp. Kosongkan nombor untuk pilih kenalan sendiri. <b>Hantar PDF</b> gabung kelima-lima borang dalam satu fail dan buka menu kongsi phone – pilih WA Business atau WhatsApp.</p>
   </aside>
 </main>
 <div id="toast" role="status"></div>
@@ -214,13 +214,13 @@ function update(){
 // Kedudukan isian atas borang asal (x, garis dasar dari atas, dalam point)
 const PDFMAP = {
   chk:{ src:"sop.pdf", page:0, white:[[396,110,12,12]], f:[["$cust",80,119,{w:270}],["bref",404,119,{w:96,align:"center"}],["$vso",507,119,{w:96,align:"center"}]],
-        ticks:(t)=>{ const b=(getv("buyer")||"").toUpperCase(); if(b.startsWith("FINANCE")) t(207,374); if(b.startsWith("CASH")) t(433,374); } },
+        ticks:(t,g)=>{ const b=(g("buyer")||"").toUpperCase(); if(b.startsWith("FINANCE")) t(207,374); if(b.startsWith("CASH")) t(433,374); } },
   ins:{ src:"sop.pdf", page:1, white:[[70,484,50,14]], label:[["SPECIAL PERILS",72,495]],
         f:[["icom",300,120,{w:160}],["vno",300,141,{w:160}],["per",300,161,{w:160}],["$date",300,182,{w:160}],["ncd",300,203,{w:160}],["d1n",300,265,{w:160}],
            ["wv",300,451,{w:120}],["wp",300,471,{w:85}],["ov",300,492,{w:160}],["op",300,513,{w:160}],["$cust",118,624],["$nric",118,650],["$date",118,696]] },
   trd:{ src:"sop.pdf", page:2, f:[["$cust",176,52,{w:130}],["$date",176,78,{w:110}],["$cust",110,738,{w:125}],["$nric",112,762,{w:90}],["$sa",418,738,{w:120}],["sanric",380,762,{w:110}]] },
   reg:{ src:"sop.pdf", page:3, f:[["$date",100,63],["$model",292,181],["$vso",142,198],["oth",325,331,{w:150}],["a",148,390,{w:85}],["b",148,408,{w:85}],["c",148,426,{w:90}],["$cust",112,710],["$nric",112,728]],
-        ticks:(t)=>{ const o=(getv("opt")||"").toUpperCase(), j=(getv("jpj")||"").toUpperCase();
+        ticks:(t,g)=>{ const o=(g("opt")||"").toUpperCase(), j=(g("jpj")||"").toUpperCase();
           if(o.startsWith("RUNNING")) t(120,236); if(o.startsWith("DAFTAR")) t(120,272); if(o.startsWith("NOMBOR")) t(120,355);
           if(j.includes("WILAYAH")) t(142.5,295); if(j.includes("SELANGOR")) t(142.5,313); if(j.includes("LAIN")) t(142.5,331); } },
   gear:{ src:"gearup.pdf", page:0, f:[["$sa",192,170],["$cust",192,213],["$vso",192,257],["$model",192,300],["col",192,344],["$date",192,712]], gear:true }
@@ -228,45 +228,49 @@ const PDFMAP = {
 const pdfCache = {};
 async function makePDF(){
   const { PDFDocument, StandardFonts, rgb } = PDFLib;
-  const m = PDFMAP[cur], f = F.find(x=>x.id===cur), s = st();
-  if (!pdfCache[m.src]) pdfCache[m.src] = await fetch(m.src).then(r=>{ if(!r.ok) throw new Error("fetch"); return r.arrayBuffer(); });
-  const src = await PDFDocument.load(pdfCache[m.src]);
   const doc = await PDFDocument.create();
-  const [pg] = await doc.copyPages(src, [m.page]); doc.addPage(pg);
-  const H = pg.getHeight();
   const font = await doc.embedFont(StandardFonts.HelveticaBold);
   const ink = rgb(0.05,0.12,0.45);
   const clean = v => String(v??"").toUpperCase().replace(/[^\x20-\x7E]/g,"");
-  const put = (txt, x, b, o={}) => {
-    txt = clean(txt); if (!txt) return;
-    let size = o.size||10; const w = o.w||230;
-    while (size>6 && font.widthOfTextAtSize(txt,size)>w) size -= 0.5;
-    let xx = x; const tw = font.widthOfTextAtSize(txt,size);
-    if (o.align==="right") xx = x - tw; if (o.align==="center") xx = x - tw/2;
-    pg.drawText(txt, { x:xx, y:H-b, size, font, color:o.color||ink });
-  };
-  const tick = (cx, cy) => {
-    pg.drawLine({ start:{x:cx-4,y:H-cy}, end:{x:cx-1,y:H-cy-4}, thickness:1.8, color:ink });
-    pg.drawLine({ start:{x:cx-1,y:H-cy-4}, end:{x:cx+5,y:H-cy+5}, thickness:1.8, color:ink });
-  };
-  for (const [x,y,w,hh] of (m.white||[])) pg.drawRectangle({ x, y:H-y-hh, width:w, height:hh, color:rgb(1,1,1) });
-  for (const [t,x,b] of (m.label||[])) put(t, x, b, { color:rgb(0,0,0), size:10.5, w:140 });
-  const types = {}; f.secs.forEach(sec=>(sec.f||[]).forEach(fd=>types[fd[0]]=fd[2]));
-  for (const [k,x,b,o] of m.f) {
-    let v = getv(k); if (!v) continue;
-    if (types[k]==="date") v = fmtDate(v);
-    if (types[k]==="num") v = money(num(v));
-    put(v, x, b, o);
-  }
-  if (m.ticks) m.ticks(tick);
-  if (m.gear) {
-    const rows=[466,496,526,555,585,615]; let tu=0,tr=0;
-    rows.forEach((b,i)=>{ const d=s["g"+i+"d"], u=num(s["g"+i+"u"]), r=num(s["g"+i+"r"]); tu+=u; tr+=r;
-      put(d, 82, b, { w:260 }); if (u) put(u, 400, b, { align:"center" }); if (r) put(money(r), 525, b, { align:"right" }); });
-    if (tu) put(tu, 400, 641, { align:"center" }); if (tr) put(money(tr), 525, 641, { align:"right" });
+  const srcs = {};
+  for (const fid of ["chk","ins","trd","reg","gear"]) {
+    const m = PDFMAP[fid], f = F.find(x=>x.id===fid), s = S[fid] || {};
+    const g = k => k[0]==="$" ? sh()[k] : s[k];
+    if (!pdfCache[m.src]) pdfCache[m.src] = await fetch(m.src).then(r=>{ if(!r.ok) throw new Error("fetch"); return r.arrayBuffer(); });
+    if (!srcs[m.src]) srcs[m.src] = await PDFDocument.load(pdfCache[m.src]);
+    const [pg] = await doc.copyPages(srcs[m.src], [m.page]); doc.addPage(pg);
+    const H = pg.getHeight();
+    const put = (txt, x, b, o={}) => {
+      txt = clean(txt); if (!txt) return;
+      let size = o.size||10; const w = o.w||230;
+      while (size>6 && font.widthOfTextAtSize(txt,size)>w) size -= 0.5;
+      let xx = x; const tw = font.widthOfTextAtSize(txt,size);
+      if (o.align==="right") xx = x - tw; if (o.align==="center") xx = x - tw/2;
+      pg.drawText(txt, { x:xx, y:H-b, size, font, color:o.color||ink });
+    };
+    const tick = (cx, cy) => {
+      pg.drawLine({ start:{x:cx-4,y:H-cy}, end:{x:cx-1,y:H-cy-4}, thickness:1.8, color:ink });
+      pg.drawLine({ start:{x:cx-1,y:H-cy-4}, end:{x:cx+5,y:H-cy+5}, thickness:1.8, color:ink });
+    };
+    for (const [x,y,w,hh] of (m.white||[])) pg.drawRectangle({ x, y:H-y-hh, width:w, height:hh, color:rgb(1,1,1) });
+    for (const [t,x,b] of (m.label||[])) put(t, x, b, { color:rgb(0,0,0), size:10.5, w:140 });
+    const types = {}; f.secs.forEach(sec=>(sec.f||[]).forEach(fd=>types[fd[0]]=fd[2]));
+    for (const [k,x,b,o] of m.f) {
+      let v = g(k); if (!v) continue;
+      if (types[k]==="date") v = fmtDate(v);
+      if (types[k]==="num") v = money(num(v));
+      put(v, x, b, o);
+    }
+    if (m.ticks) m.ticks(tick, g);
+    if (m.gear) {
+      const rows=[466,496,526,555,585,615]; let tu=0,tr=0;
+      rows.forEach((b,i)=>{ const d=s["g"+i+"d"], u=num(s["g"+i+"u"]), r=num(s["g"+i+"r"]); tu+=u; tr+=r;
+        put(d, 82, b, { w:260 }); if (u) put(u, 400, b, { align:"center" }); if (r) put(money(r), 525, b, { align:"right" }); });
+      if (tu) put(tu, 400, 641, { align:"center" }); if (tr) put(money(tr), 525, 641, { align:"right" });
+    }
   }
   const bytes = await doc.save();
-  const name = (f.tab + "_" + (getv("$cust")||"BORANG")).toUpperCase().replace(/[^A-Z0-9]+/g,"_").replace(/^_|_$/g,"");
+  const name = ("BORANG_" + (getv("$cust")||"PELANGGAN")).toUpperCase().replace(/[^A-Z0-9]+/g,"_").replace(/^_|_$/g,"");
   return new File([bytes], name + ".pdf", { type:"application/pdf" });
 }
 $("pdf").addEventListener("click", async ()=>{
