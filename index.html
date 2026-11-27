@@ -100,7 +100,7 @@ const F = [
   {h:"Confirmed by", f:[["$cust","Customer Name"],["$nric","Customer NRIC"],["$date","Date","date"]]}
  ]},
  {id:"trd", tab:"Trade-In", title:"VEHICLE TRADE-IN CONFIRMATION", secs:[
-  {h:"Tandatangan", f:[["$cust","Customer Name"],["$nric","Customer NRIC"],["$date","Date","date"],["sa","Sales Advisor"],["sanric","SA NRIC"]]}
+  {h:"Tandatangan", f:[["$cust","Customer Name"],["$nric","Customer NRIC"],["$date","Date","date"],["$sa","Sales Advisor"],["sanric","SA NRIC"]]}
  ]},
  {id:"reg", tab:"No. Plat", title:"REGISTRATION NUMBER CONFIRMATION", secs:[
   {h:"Kenderaan", f:[["$model","Model Code"],["$vso","VSO Number"]]},
@@ -109,7 +109,7 @@ const F = [
   {h:"Pelanggan", f:[["$cust","Customer Name"],["$nric","Customer NRIC"]]}
  ]},
  {id:"gear", tab:"Gear-Up", title:"GEAR-UP CONFIRMATION", secs:[
-  {h:"Maklumat", f:[["sa","Sales Advisor"],["$cust","Customer Name"],["$nric","Customer NRIC"],["$vso","VSO No"],["$model","Model Code"],["col","Color"]]},
+  {h:"Maklumat", f:[["$sa","Sales Advisor"],["$cust","Customer Name"],["$nric","Customer NRIC"],["$vso","VSO No"],["$model","Model Code"],["col","Color"]]},
   {h:"GEAR-UP ITEMS TO ADD", gear:6},
   {h:"Pengesahan", f:[["$date","Date","date"]]}
  ]}
@@ -218,7 +218,7 @@ $("form").addEventListener("change", e=>{ const k=e.target.dataset.k; if(!k) ret
 $("wano").addEventListener("input", ()=>{ try{localStorage.setItem("ymd-no",$("wano").value)}catch(e){} update(); });
 $("copy").addEventListener("click", async ()=>{ try { await navigator.clipboard.writeText(build()); toast("Teks disalin"); } catch(e) { const r=document.createRange(); r.selectNodeContents($("out")); const sel=getSelection(); sel.removeAllRanges(); sel.addRange(r); toast("Teks dipilih – tekan Salin"); } });
 let armed=false;
-$("reset").addEventListener("click", ()=>{ if(!armed){ armed=true; $("reset").textContent="Pasti?"; setTimeout(()=>{armed=false;$("reset").textContent="Kosongkan";},2500); return; } armed=false; $("reset").textContent="Kosongkan"; S[cur]={}; S._shared={}; applyDefaults(); renderForm(); toast("Borang dikosongkan (nama, IC, VSO & model juga)"); });
+$("reset").addEventListener("click", ()=>{ if(!armed){ armed=true; $("reset").textContent="Pasti?"; setTimeout(()=>{armed=false;$("reset").textContent="Kosongkan";},2500); return; } armed=false; $("reset").textContent="Kosongkan"; S[cur]={}; S._shared={ "$sa": sh()["$sa"] }; applyDefaults(); renderForm(); toast("Borang dikosongkan (nama, IC, VSO & model juga)"); });
 
 try { $("wano").value = localStorage.getItem("ymd-no")||""; } catch(e) {}
 if (!F.some(f=>f.id===cur)) cur="chk";
