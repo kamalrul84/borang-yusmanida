@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Borang Yusmanida</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* VOICE: practical showroom tool, quick and calm, for a sales advisor on phone/iPad
+   IDEA: the paper SOP form beside the WhatsApp message it becomes
+   PICTURE: the form itself, with a live WhatsApp bubble showing the aligned text
+   COLOUR and TYPE: deep showroom blue, white paper, input-yellow, WhatsApp green bubble only for the preview; Plus Jakarta Sans + JetBrains Mono
+   LAYOUT: tabs on top, form left, preview right; stacks on phone with sticky send bar */
+:root{color-scheme:light dark;--bg:light-dark(#eef1f6,#0d1220);--paper:light-dark(#fff,#161d2f);--ink:light-dark(#14192a,#e8ecf5);--mute:light-dark(#5d6680,#9aa3ba);--blue:light-dark(#163a8a,#7ea2ff);--line:light-dark(#d5dbe7,#2a3450);--fill:light-dark(#fffbe0,#2a2a18);--wa:light-dark(#dcf8c6,#103b2e);--wabg:light-dark(#e5ddd5,#0b141a);--waink:light-dark(#111,#e9edef)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Plus Jakarta Sans",system-ui,sans-serif;overflow-x:clip}
+header{background:var(--blue);color:light-dark(#fff,#0d1220);padding:18px max(4vw,16px) 0}
+header h1{margin:0;font-size:clamp(22px,4vw,32px);line-height:1.1}
+header p{margin:4px 0 14px;opacity:.85;font-size:14px}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:0}
+.tabs button{flex:none;border:0;border-radius:10px 10px 0 0;padding:12px 16px;font:600 14px inherit;font-family:inherit;background:transparent;color:inherit;opacity:.8;cursor:pointer;min-height:44px}
+.tabs button[aria-selected=true]{background:var(--bg);color:var(--ink);opacity:1}
+main{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:24px;padding:20px max(4vw,16px) 100px;max-width:1240px;margin:auto}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:18px}
+.card h2{margin:0 0 2px;font-size:22px}
+.sec{margin-top:20px}
+.sec h3{margin:0 0 10px;font-size:15px;color:var(--blue);border-bottom:1px solid var(--line);padding-bottom:6px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px 14px}
+label{display:block;font-size:13px;color:var(--mute);font-weight:600}
+input,select{width:100%;margin-top:3px;font:16px inherit;font-family:inherit;padding:10px 11px;border:1px solid var(--line);border-radius:9px;background:var(--fill);color:var(--ink);min-height:44px}
+input:focus,select:focus,button:focus-visible{outline:3px solid var(--blue);outline-offset:1px}
+.chk{width:100%;border-collapse:collapse;font-size:14px}
+.chk th{font-size:12px;color:var(--mute);text-align:center;padding:4px}
+.chk th:nth-child(2){text-align:left}
+.chk td{border-top:1px solid var(--line);padding:6px 4px;vertical-align:middle}
+.chk td:first-child{width:28px;color:var(--mute);text-align:right}
+.chk td.c{width:54px;text-align:center}
+.chk input[type=checkbox]{width:24px;height:24px;min-height:0;margin:0;accent-color:var(--blue)}
+.chk input[type=text]{margin-top:5px;min-height:38px;padding:7px 9px}
+.gear{width:100%;border-collapse:collapse}
+.gear th{font-size:12px;color:var(--mute);text-align:left;padding:4px}
+.gear td{padding:3px}
+.gear td:first-child{width:24px;color:var(--mute);text-align:center}
+.gear .n{width:80px}.gear .r{width:120px}
+.gear input{margin:0}
+.tot{text-align:right;font-weight:700;padding:8px 4px}
+aside{position:sticky;top:12px;align-self:start}
+.phone{background:var(--wabg);border-radius:14px;padding:14px;border:1px solid var(--line)}
+.bubble{background:var(--wa);color:var(--waink);border-radius:10px 0 10px 10px;padding:10px 12px;font:13px/1.45 "JetBrains Mono",ui-monospace,monospace;white-space:pre-wrap;overflow-wrap:anywhere;max-height:62vh;overflow:auto}
+.ph{display:flex;gap:8px;align-items:end;margin-top:12px}
+.ph>div{flex:1}
+.bar{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.btn{flex:1;min-height:46px;border:0;border-radius:10px;font:700 15px inherit;font-family:inherit;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;padding:0 14px}
+.go{background:#1fa855;color:#fff}.cp{background:var(--blue);color:light-dark(#fff,#0d1220)}.rs{background:transparent;color:var(--mute);border:1px solid var(--line);flex:0 0 auto}
+.note{font-size:13px;color:var(--mute);margin:8px 0 0}
+#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none}
+#toast.on{opacity:1}
+@media(max-width:860px){main{grid-template-columns:minmax(0,1fr)}aside{position:static}}
+@media(prefers-reduced-motion:reduce){#toast{transition:none}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Borang Yusmanida Auto</h1>
+  <p>Isi borang, semak mesej di sebelah, terus hantar ke WhatsApp.</p>
+  <nav class="tabs" id="tabs" role="tablist"></nav>
+</header>
+<main>
+  <section class="card" id="form"></section>
+  <aside>
+    <div class="phone">
+      <div class="bubble" id="out"></div>
+    </div>
+    <div class="ph">
+      <div><label for="wano">No. WhatsApp penerima (pilihan)</label><input id="wano" inputmode="tel" placeholder="cth: 0123456789"></div>
+    </div>
+    <div class="bar">
+      <a class="btn go" id="send" href="#" target="_blank" rel="noopener">Hantar ke WhatsApp</a>
+      <button class="btn cp" id="copy" type="button">Salin teks</button>
+      <button class="btn rs" id="reset" type="button">Kosongkan</button>
+    </div>
+    <p class="note">Teks dihantar dalam format monospace (```), jadi titik bertindih dan nombor lurus ikut kolum dalam WhatsApp. Kosongkan nombor untuk pilih kenalan sendiri.</p>
+  </aside>
+</main>
+<div id="toast" role="status"></div>
+
+<script>
+{
+const F = [
+ {id:"chk", tab:"Checklist", title:"CHECKLIST FOR REGISTRATION AND REIMBURSEMENT", secs:[
+  {h:"Maklumat", f:[["$cust","Customer Name"],["bref","Booking Ref No"],["$vso","VSO No."]]},
+  {h:"Jenis pembeli", f:[["buyer","Please tick","sel",["","FINANCE DISBURSEMENT","CASH BUYER"]]]}
+ ]},
+ {id:"ins", tab:"Insurans", title:"INSURANCE CONFIRMATION", secs:[
+  {h:"NCD", f:[["icom","Insurance Company"],["vno","Vehicle No"],["per","Period"],["cdate","Cancel/Withdraw","date"],["ncd","NCD %"]]},
+  {h:"EXTRA BENEFIT", f:[["d1n","Additional Driver","txt",null,"ALL DRIVER"]]},
+  {h:"Windscreen & Special Perils", f:[["wv","Windscreen Value"],["wp","Windscreen Premium"],["ov","Special Perils Value"],["op","Special Perils Premium"]]},
+  {h:"Confirmed by", f:[["$cust","Customer Name"],["$nric","Customer NRIC"],["cdt","Date","date"]]}
+ ]},
+ {id:"trd", tab:"Trade-In", title:"VEHICLE TRADE-IN CONFIRMATION", secs:[
+  {h:"Tandatangan", f:[["$cust","Customer Name"],["$nric","Customer NRIC"],["date","Date","date"],["sa","Sales Advisor"],["sanric","SA NRIC"]]}
+ ]},
+ {id:"reg", tab:"No. Plat", title:"REGISTRATION NUMBER CONFIRMATION", secs:[
+  {h:"Kenderaan", f:[["$model","Model Code"],["$vso","VSO Number"]]},
+  {h:"Pilihan pendaftaran", f:[["opt","Option","sel",["","Running number JPJ","Daftar di JPJ pilihan","Nombor khas"]],["jpj","JPJ","sel",["","JPJ Wilayah Persekutuan","JPJ Selangor","JPJ negeri lain"]],["oth","Negeri lain"]]},
+  {h:"Nombor khas (jika ada)", f:[["a","Pilihan a)"],["b","Pilihan b)"],["c","Pilihan c)"]]},
+  {h:"Pelanggan", f:[["$cust","Customer Name"],["$nric","Customer NRIC"]]}
+ ]},
+ {id:"gear", tab:"Gear-Up", title:"GEAR-UP CONFIRMATION", secs:[
+  {h:"Maklumat", f:[["sa","Sales Advisor"],["$cust","Customer Name"],["$nric","Customer NRIC"],["$vso","VSO No"],["$model","Model Code"],["col","Color"]]},
+  {h:"GEAR-UP ITEMS TO ADD", gear:6},
+  {h:"Pengesahan", f:[["date","Date","date"]]}
+ ]}
+];
+
+let S = {}; let cur = "chk";
+try { S = JSON.parse(localStorage.getItem("ymd-borang")||"{}"); cur = localStorage.getItem("ymd-tab")||"chk"; } catch(e) {}
+const applyDefaults = () => { for (const f of F) for (const sec of f.secs) for (const fd of (sec.f||[])) if (fd[4] && (S[f.id] ??= {})[fd[0]] == null) S[f.id][fd[0]] = fd[4]; };
+applyDefaults();
+const save = () => { try { localStorage.setItem("ymd-borang", JSON.stringify(S)); localStorage.setItem("ymd-tab", cur); } catch(e) {} };
+const esc = s => String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const $ = id => document.getElementById(id);
+const st = () => (S[cur] ??= {});
+const sh = () => (S._shared ??= {});
+const getv = k => k[0]==="$" ? sh()[k] : st()[k];
+const setv = (k,v) => { if (k[0]==="$") sh()[k]=v; else st()[k]=v; };
+const fmtDate = v => v ? v.split("-").reverse().join("/") : "";
+const money = n => n.toLocaleString("en-MY",{minimumFractionDigits:2,maximumFractionDigits:2});
+
+function renderTabs(){
+  $("tabs").innerHTML = F.map(f=>`<button role="tab" data-t="${f.id}" aria-selected="${f.id===cur}">${f.tab}</button>`).join("");
+}
+function fieldHTML([k,l,t,opts]){
+  const v = esc(getv(k));
+  if (t==="sel") return `<div><label for="f_${k}">${l}</label><select id="f_${k}" data-k="${k}">${opts.map(o=>`<option${o===getv(k)?" selected":""} value="${esc(o)}">${o||"— pilih —"}</option>`).join("")}</select></div>`;
+  const type = t==="date"?"date":"text", im = t==="num"?' inputmode="decimal"':"";
+  return `<div><label for="f_${k}">${l}</label><input id="f_${k}" type="${type}" data-k="${k}" value="${v}"${im}></div>`;
+}
+function renderForm(){
+  const f = F.find(x=>x.id===cur), s = st();
+  let h = `<h2>${f.title}</h2><p class="note">Yusmanida Auto Sdn Bhd</p>`;
+  for (const sec of f.secs){
+    h += `<div class="sec"><h3>${sec.h}</h3>`;
+    if (sec.f) h += `<div class="grid">${sec.f.map(fieldHTML).join("")}</div>`;
+    if (sec.chk) h += `<table class="chk"><tr><th>No</th><th>Item</th><th>${sec.cols[0]}</th><th>${sec.cols[1]}</th></tr>${sec.items.map((it,i)=>{
+      const [name,hasV] = it.split("|"), key = sec.chk+i;
+      return `<tr><td>${i+1}</td><td>${name}${hasV?`<input type="text" aria-label="${esc(name)}" data-k="${key}v" value="${esc(s[key+"v"])}">`:""}</td>${[0,1].map(c=>`<td class="c"><input type="checkbox" aria-label="${esc(name)} ${sec.cols[c]}" data-k="${key}c${c}"${s[key+"c"+c]?" checked":""}></td>`).join("")}</tr>`;}).join("")}</table>`;
+    if (sec.gear) h += `<table class="gear"><tr><th>No</th><th>Description</th><th class="n">Unit</th><th class="r">RM</th></tr>${Array.from({length:sec.gear},(_,i)=>`<tr><td>${i+1}</td><td><input aria-label="Item ${i+1}" data-k="g${i}d" value="${esc(s["g"+i+"d"])}"></td><td class="n"><input inputmode="numeric" aria-label="Unit ${i+1}" data-k="g${i}u" value="${esc(s["g"+i+"u"])}"></td><td class="r"><input inputmode="decimal" aria-label="RM ${i+1}" data-k="g${i}r" value="${esc(s["g"+i+"r"])}"></td></tr>`).join("")}<tr><td></td><td class="tot">TOTAL</td><td class="tot" id="tu"></td><td class="tot" id="tr"></td></tr></table>`;
+    h += `</div>`;
+  }
+  $("form").innerHTML = h;
+  update();
+}
+
+const num = v => { const n = parseFloat(String(v||"").replace(/,/g,"")); return isNaN(n)?0:n; };
+const padR = (s,n) => String(s).padStart(n);
+
+function build(){
+  const f = F.find(x=>x.id===cur), s = st();
+  const allLabels = f.secs.flatMap(sec=>sec.f||[]).map(x=>x[1].length);
+  const L = Math.min(22,Math.max(...allLabels, 4));
+  const val = ([k,,t]) => { const v = getv(k); if (!v) return "-"; if (t==="date") return fmtDate(v); if (t==="num") return money(num(v)); return v; };
+  let out = [];
+  for (const sec of f.secs){
+    out.push("", `--- ${sec.h.toUpperCase()} ---`);
+    if (sec.f) sec.f.forEach(fd => out.push(`${fd[1].padEnd(L)} : ${val(fd)}`));
+    if (sec.chk){
+      out.push(`${sec.cols[0]} ${sec.cols[1]}`);
+      sec.items.forEach((it,i)=>{
+        const [name,hasV] = it.split("|"), key = sec.chk+i;
+        const b = c => s[key+"c"+c] ? "[/]" : "[ ]";
+        let line = `${b(0)}${b(1)} ${String(i+1).padStart(2,"0")} ${name}`;
+        if (hasV) line += `: ${s[key+"v"]||"-"}`;
+        out.push(line);
+      });
+    }
+    if (sec.gear){
+      const D = 14;
+      out.push(`No ${"Item".padEnd(D)} ${"Unit".padStart(4)} ${"RM".padStart(10)}`);
+      let tu=0, tr=0;
+      for (let i=0;i<sec.gear;i++){
+        const d = (s["g"+i+"d"]||"").trim(), u = num(s["g"+i+"u"]), r = num(s["g"+i+"r"]);
+        if (!d && !u && !r) continue;
+        tu+=u; tr+=r;
+        const nums = `${padR(u||"",4)} ${padR(r?money(r):"",10)}`;
+        if (d.length<=D) out.push(`${(i+1+".").padEnd(3)}${d.padEnd(D)} ${nums}`);
+        else { out.push(`${(i+1+".").padEnd(3)}${d}`); out.push(`${"".padEnd(3+D)} ${nums}`); }
+      }
+      out.push("-".repeat(3+D+1+4+1+10));
+      out.push(`${"TOTAL".padStart(3+D)} ${padR(tu,4)} ${padR(money(tr),10)}`);
+    }
+  }
+  return `*YUSMANIDA AUTO SDN BHD*\n*${f.title}*\n\`\`\`${out.join("\n").replace(/^\n/,"")}\n\`\`\``;
+}
+
+function update(){
+  const s = st();
+  if (cur==="gear"){
+    let tu=0,tr=0; for(let i=0;i<6;i++){tu+=num(s["g"+i+"u"]);tr+=num(s["g"+i+"r"]);}
+    if ($("tu")) { $("tu").textContent = tu; $("tr").textContent = "RM " + money(tr); }
+  }
+  const msg = build();
+  $("out").textContent = msg;
+  let no = ($("wano").value||"").replace(/\D/g,"");
+  if (no.startsWith("0")) no = "6"+no;
+  $("send").href = `https://wa.me/${no}?text=${encodeURIComponent(msg)}`;
+  save();
+}
+
+let tt;
+function toast(t){ const el=$("toast"); el.textContent=t; el.classList.add("on"); clearTimeout(tt); tt=setTimeout(()=>el.classList.remove("on"),1800); }
+
+$("tabs").addEventListener("click", e=>{ const b=e.target.closest("button"); if(!b) return; cur=b.dataset.t; renderTabs(); renderForm(); });
+$("form").addEventListener("input", e=>{ const k=e.target.dataset.k; if(!k) return; setv(k, e.target.type==="checkbox" ? e.target.checked : e.target.value); update(); });
+$("form").addEventListener("change", e=>{ const k=e.target.dataset.k; if(!k) return; setv(k, e.target.type==="checkbox" ? e.target.checked : e.target.value); update(); });
+$("wano").addEventListener("input", ()=>{ try{localStorage.setItem("ymd-no",$("wano").value)}catch(e){} update(); });
+$("copy").addEventListener("click", async ()=>{ try { await navigator.clipboard.writeText(build()); toast("Teks disalin"); } catch(e) { const r=document.createRange(); r.selectNodeContents($("out")); const sel=getSelection(); sel.removeAllRanges(); sel.addRange(r); toast("Teks dipilih – tekan Salin"); } });
+let armed=false;
+$("reset").addEventListener("click", ()=>{ if(!armed){ armed=true; $("reset").textContent="Pasti?"; setTimeout(()=>{armed=false;$("reset").textContent="Kosongkan";},2500); return; } armed=false; $("reset").textContent="Kosongkan"; S[cur]={}; S._shared={}; applyDefaults(); renderForm(); toast("Borang dikosongkan (nama, IC, VSO & model juga)"); });
+
+try { $("wano").value = localStorage.getItem("ymd-no")||""; } catch(e) {}
+if (!F.some(f=>f.id===cur)) cur="chk";
+renderTabs(); renderForm();
+}
+</script>
+</body>
+</html>
