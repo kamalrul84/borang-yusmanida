@@ -53,7 +53,7 @@ aside{position:sticky;top:12px;align-self:start}
 .ph>div{flex:1}
 .bar{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 .btn{flex:1;min-height:46px;border:0;border-radius:10px;font:700 15px inherit;font-family:inherit;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;padding:0 14px}
-.go{background:#1fa855;color:#fff}.cp{background:var(--blue);color:light-dark(#fff,#0d1220)}.rs{background:transparent;color:var(--mute);border:1px solid var(--line);flex:0 0 auto}
+.go{background:#1fa855;color:#fff}.biz{background:#0b7a5a}.cp{background:var(--blue);color:light-dark(#fff,#0d1220)}.rs{background:transparent;color:var(--mute);border:1px solid var(--line);flex:0 0 auto}
 .note{font-size:13px;color:var(--mute);margin:8px 0 0}
 #toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none}
 #toast.on{opacity:1}
@@ -77,11 +77,13 @@ aside{position:sticky;top:12px;align-self:start}
       <div><label for="wano">No. WhatsApp penerima (pilihan)</label><input id="wano" inputmode="tel" placeholder="cth: 0123456789"></div>
     </div>
     <div class="bar">
-      <a class="btn go" id="send" href="#" target="_blank" rel="noopener">Hantar ke WhatsApp</a>
+      <a class="btn go" id="send" href="#" target="_blank" rel="noopener">WhatsApp</a>
+      <a class="btn go biz" id="sendb" href="#" target="_blank" rel="noopener">WA Business</a>
+      <button class="btn cp" id="share" type="button" hidden>Kongsi…</button>
       <button class="btn cp" id="copy" type="button">Salin teks</button>
       <button class="btn rs" id="reset" type="button">Kosongkan</button>
     </div>
-    <p class="note">Teks dihantar dalam format monospace (```), jadi titik bertindih dan nombor lurus ikut kolum dalam WhatsApp. Kosongkan nombor untuk pilih kenalan sendiri.</p>
+    <p class="note">Teks dihantar dalam format monospace (```), jadi titik bertindih dan nombor lurus ikut kolum dalam WhatsApp. Kosongkan nombor untuk pilih kenalan sendiri. Di Android, butang WhatsApp / WA Business terus buka app itu. Di iPhone, guna <b>Kongsi…</b> dan pilih WhatsApp atau WA Business.</p>
   </aside>
 </main>
 <div id="toast" role="status"></div>
@@ -205,10 +207,19 @@ function update(){
   $("out").textContent = msg;
   let no = ($("wano").value||"").replace(/\D/g,"");
   if (no.startsWith("0")) no = "6"+no;
-  $("send").href = `https://wa.me/${no}?text=${encodeURIComponent(msg)}`;
+  const q = `${no?"phone="+no+"&":""}text=${encodeURIComponent(msg)}`;
+  if (isAndroid) {
+    $("send").href  = `intent://send?${q}#Intent;scheme=whatsapp;package=com.whatsapp;end`;
+    $("sendb").href = `intent://send?${q}#Intent;scheme=whatsapp;package=com.whatsapp.w4b;end`;
+  } else {
+    const wa = `https://wa.me/${no}?text=${encodeURIComponent(msg)}`;
+    $("send").href = wa; $("sendb").href = wa;
+  }
   save();
 }
 
+const isAndroid = /Android/i.test(navigator.userAgent);
+if (navigator.share) { $("share").hidden = false; $("share").addEventListener("click", async ()=>{ try { await navigator.share({ text: build() }); } catch(e) {} }); }
 let tt;
 function toast(t){ const el=$("toast"); el.textContent=t; el.classList.add("on"); clearTimeout(tt); tt=setTimeout(()=>el.classList.remove("on"),1800); }
 
