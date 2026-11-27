@@ -29,7 +29,7 @@ main{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:24px;
 .sec h3{margin:0 0 10px;font-size:15px;color:var(--blue);border-bottom:1px solid var(--line);padding-bottom:6px}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px 14px}
 label{display:block;font-size:13px;color:var(--mute);font-weight:600}
-input,select{width:100%;margin-top:3px;font:16px inherit;font-family:inherit;padding:10px 11px;border:1px solid var(--line);border-radius:9px;background:var(--fill);color:var(--ink);min-height:44px}
+input,select{text-transform:uppercase;width:100%;margin-top:3px;font:16px inherit;font-family:inherit;padding:10px 11px;border:1px solid var(--line);border-radius:9px;background:var(--fill);color:var(--ink);min-height:44px}
 input:focus,select:focus,button:focus-visible{outline:3px solid var(--blue);outline-offset:1px}
 .chk{width:100%;border-collapse:collapse;font-size:14px}
 .chk th{font-size:12px;color:var(--mute);text-align:center;padding:4px}
@@ -94,13 +94,13 @@ const F = [
   {h:"Jenis pembeli", f:[["buyer","Please tick","sel",["","FINANCE DISBURSEMENT","CASH BUYER"]]]}
  ]},
  {id:"ins", tab:"Insurans", title:"INSURANCE CONFIRMATION", secs:[
-  {h:"NCD", f:[["icom","Insurance Company"],["vno","Vehicle No"],["per","Period"],["cdate","Cancel/Withdraw","date"],["ncd","NCD %"]]},
+  {h:"NCD", f:[["icom","Insurance Company"],["vno","Vehicle No"],["per","Period"],["$date","Cancel/Withdraw","date"],["ncd","NCD %"]]},
   {h:"EXTRA BENEFIT", f:[["d1n","Additional Driver","txt",null,"ALL DRIVER"]]},
   {h:"Windscreen & Special Perils", f:[["wv","Windscreen Value"],["wp","Windscreen Premium"],["ov","Special Perils Value"],["op","Special Perils Premium"]]},
-  {h:"Confirmed by", f:[["$cust","Customer Name"],["$nric","Customer NRIC"],["cdt","Date","date"]]}
+  {h:"Confirmed by", f:[["$cust","Customer Name"],["$nric","Customer NRIC"],["$date","Date","date"]]}
  ]},
  {id:"trd", tab:"Trade-In", title:"VEHICLE TRADE-IN CONFIRMATION", secs:[
-  {h:"Tandatangan", f:[["$cust","Customer Name"],["$nric","Customer NRIC"],["date","Date","date"],["sa","Sales Advisor"],["sanric","SA NRIC"]]}
+  {h:"Tandatangan", f:[["$cust","Customer Name"],["$nric","Customer NRIC"],["$date","Date","date"],["sa","Sales Advisor"],["sanric","SA NRIC"]]}
  ]},
  {id:"reg", tab:"No. Plat", title:"REGISTRATION NUMBER CONFIRMATION", secs:[
   {h:"Kenderaan", f:[["$model","Model Code"],["$vso","VSO Number"]]},
@@ -111,7 +111,7 @@ const F = [
  {id:"gear", tab:"Gear-Up", title:"GEAR-UP CONFIRMATION", secs:[
   {h:"Maklumat", f:[["sa","Sales Advisor"],["$cust","Customer Name"],["$nric","Customer NRIC"],["$vso","VSO No"],["$model","Model Code"],["col","Color"]]},
   {h:"GEAR-UP ITEMS TO ADD", gear:6},
-  {h:"Pengesahan", f:[["date","Date","date"]]}
+  {h:"Pengesahan", f:[["$date","Date","date"]]}
  ]}
 ];
 
@@ -125,7 +125,7 @@ const $ = id => document.getElementById(id);
 const st = () => (S[cur] ??= {});
 const sh = () => (S._shared ??= {});
 const getv = k => k[0]==="$" ? sh()[k] : st()[k];
-const setv = (k,v) => { if (k[0]==="$") sh()[k]=v; else st()[k]=v; };
+const setv = (k,v) => { if (typeof v==="string") v=v.toUpperCase(); if (k[0]==="$") sh()[k]=v; else st()[k]=v; };
 const fmtDate = v => v ? v.split("-").reverse().join("/") : "";
 const money = n => n.toLocaleString("en-MY",{minimumFractionDigits:2,maximumFractionDigits:2});
 
@@ -134,7 +134,7 @@ function renderTabs(){
 }
 function fieldHTML([k,l,t,opts]){
   const v = esc(getv(k));
-  if (t==="sel") return `<div><label for="f_${k}">${l}</label><select id="f_${k}" data-k="${k}">${opts.map(o=>`<option${o===getv(k)?" selected":""} value="${esc(o)}">${o||"— pilih —"}</option>`).join("")}</select></div>`;
+  if (t==="sel") return `<div><label for="f_${k}">${l}</label><select id="f_${k}" data-k="${k}">${opts.map(o=>`<option${o.toUpperCase()===String(getv(k)??"").toUpperCase()?" selected":""} value="${esc(o)}">${o||"— pilih —"}</option>`).join("")}</select></div>`;
   const type = t==="date"?"date":"text", im = t==="num"?' inputmode="decimal"':"";
   return `<div><label for="f_${k}">${l}</label><input id="f_${k}" type="${type}" data-k="${k}" value="${v}"${im}></div>`;
 }
@@ -192,7 +192,7 @@ function build(){
       out.push(`${"TOTAL".padStart(3+D)} ${padR(tu,4)} ${padR(money(tr),10)}`);
     }
   }
-  return `*YUSMANIDA AUTO SDN BHD*\n*${f.title}*\n\`\`\`${out.join("\n").replace(/^\n/,"")}\n\`\`\``;
+  return `*YUSMANIDA AUTO SDN BHD*\n*${f.title}*\n\`\`\`${out.join("\n").replace(/^\n/,"").toUpperCase()}\n\`\`\``;
 }
 
 function update(){
@@ -213,7 +213,7 @@ let tt;
 function toast(t){ const el=$("toast"); el.textContent=t; el.classList.add("on"); clearTimeout(tt); tt=setTimeout(()=>el.classList.remove("on"),1800); }
 
 $("tabs").addEventListener("click", e=>{ const b=e.target.closest("button"); if(!b) return; cur=b.dataset.t; renderTabs(); renderForm(); });
-$("form").addEventListener("input", e=>{ const k=e.target.dataset.k; if(!k) return; setv(k, e.target.type==="checkbox" ? e.target.checked : e.target.value); update(); });
+$("form").addEventListener("input", e=>{ const k=e.target.dataset.k; if(!k) return; const t=e.target; if(t.type==="text"&&t.value!==t.value.toUpperCase()){const p=t.selectionStart;t.value=t.value.toUpperCase();try{t.setSelectionRange(p,p)}catch(_){}} setv(k, e.target.type==="checkbox" ? e.target.checked : e.target.value); update(); });
 $("form").addEventListener("change", e=>{ const k=e.target.dataset.k; if(!k) return; setv(k, e.target.type==="checkbox" ? e.target.checked : e.target.value); update(); });
 $("wano").addEventListener("input", ()=>{ try{localStorage.setItem("ymd-no",$("wano").value)}catch(e){} update(); });
 $("copy").addEventListener("click", async ()=>{ try { await navigator.clipboard.writeText(build()); toast("Teks disalin"); } catch(e) { const r=document.createRange(); r.selectNodeContents($("out")); const sel=getSelection(); sel.removeAllRanges(); sel.addRange(r); toast("Teks dipilih – tekan Salin"); } });
