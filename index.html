@@ -77,17 +77,18 @@ aside{position:sticky;top:12px;align-self:start}
       <div><label for="wano">No. WhatsApp penerima (pilihan)</label><input id="wano" inputmode="tel" placeholder="cth: 0123456789"></div>
     </div>
     <div class="bar">
-      <a class="btn go" id="send" href="#" target="_blank" rel="noopener">WhatsApp</a>
-      <a class="btn go biz" id="sendb" href="#" target="_blank" rel="noopener">WA Business</a>
-      <button class="btn cp" id="share" type="button" hidden>Kongsi…</button>
+      <button class="btn go biz" id="pdf" type="button">Hantar PDF</button>
+      <a class="btn go" id="send" href="#" target="_blank" rel="noopener">WhatsApp (teks)</a>
       <button class="btn cp" id="copy" type="button">Salin teks</button>
       <button class="btn rs" id="reset" type="button">Kosongkan</button>
     </div>
-    <p class="note">Teks dihantar dalam format monospace (```), jadi titik bertindih dan nombor lurus ikut kolum dalam WhatsApp. Kosongkan nombor untuk pilih kenalan sendiri. Di Android, butang WhatsApp / WA Business terus buka app itu. Di iPhone, guna <b>Kongsi…</b> dan pilih WhatsApp atau WA Business.</p>
+    <p class="note">Teks dihantar dalam format monospace (```), jadi titik bertindih dan nombor lurus ikut kolum dalam WhatsApp. Kosongkan nombor untuk pilih kenalan sendiri. <b>Hantar PDF</b> buka menu kongsi phone – pilih WA Business atau WhatsApp.</p>
   </aside>
 </main>
 <div id="toast" role="status"></div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <script>
 {
 const F = [
@@ -207,19 +208,55 @@ function update(){
   $("out").textContent = msg;
   let no = ($("wano").value||"").replace(/\D/g,"");
   if (no.startsWith("0")) no = "6"+no;
-  const q = `${no?"phone="+no+"&":""}text=${encodeURIComponent(msg)}`;
-  if (isAndroid) {
-    $("send").href  = `intent://send?${q}#Intent;scheme=whatsapp;package=com.whatsapp;end`;
-    $("sendb").href = `intent://send?${q}#Intent;scheme=whatsapp;package=com.whatsapp.w4b;end`;
-  } else {
-    const wa = `https://wa.me/${no}?text=${encodeURIComponent(msg)}`;
-    $("send").href = wa; $("sendb").href = wa;
-  }
+  $("send").href = `https://wa.me/${no}?text=${encodeURIComponent(msg)}`;
   save();
 }
 
-const isAndroid = /Android/i.test(navigator.userAgent);
-if (navigator.share) { $("share").hidden = false; $("share").addEventListener("click", async ()=>{ try { await navigator.share({ text: build() }); } catch(e) {} }); }
+function makePDF(){
+  const { jsPDF } = window.jspdf;
+  const f = F.find(x=>x.id===cur), s = st();
+  const doc = new jsPDF({ unit:"mm", format:"a4" });
+  const W = doc.internal.pageSize.getWidth();
+  doc.setFont("helvetica","bold"); doc.setFontSize(12); doc.text("YUSMANIDA AUTO SDN BHD", 14, 16);
+  doc.setFontSize(15); doc.setTextColor(22,58,138); doc.text(f.title, 14, 24, { maxWidth: W-28 });
+  doc.setTextColor(0);
+  let y = 32;
+  const val = ([k,,t]) => { const v = getv(k); if (!v) return ""; if (t==="date") return fmtDate(v); if (t==="num") return "RM " + money(num(v)); return String(v).toUpperCase(); };
+  const head = { fillColor:[22,58,138], textColor:255, fontStyle:"bold" };
+  for (const sec of f.secs){
+    if (sec.f) {
+      doc.autoTable({ startY:y, head:[[ { content: sec.h.toUpperCase(), colSpan:2 } ]], body: sec.f.map(fd=>[fd[1].toUpperCase(), val(fd)]),
+        theme:"grid", headStyles:head, styles:{ font:"helvetica", fontSize:10, cellPadding:2.5, minCellHeight:9, valign:"middle" },
+        columnStyles:{ 0:{ cellWidth:60, fontStyle:"bold", fillColor:[238,241,246] } }, margin:{ left:14, right:14 } });
+    }
+    if (sec.gear) {
+      const rows = []; let tu=0, tr=0;
+      for (let i=0;i<sec.gear;i++){ const d=(s["g"+i+"d"]||"").toUpperCase(), u=num(s["g"+i+"u"]), r=num(s["g"+i+"r"]); tu+=u; tr+=r; rows.push([i+1, d, u||"", r?money(r):""]); }
+      doc.autoTable({ startY:y, head:[["NO", sec.h.toUpperCase(), "TTL UNITS", "RM"]], body:rows,
+        foot:[["", "TOTAL", tu, money(tr)]], theme:"grid", headStyles:head, footStyles:{ fillColor:[238,241,246], textColor:0, fontStyle:"bold" },
+        styles:{ font:"helvetica", fontSize:10, cellPadding:2.5, minCellHeight:9 },
+        columnStyles:{ 0:{ cellWidth:12, halign:"center" }, 2:{ cellWidth:26, halign:"right" }, 3:{ cellWidth:34, halign:"right" } }, margin:{ left:14, right:14 } });
+    }
+    y = doc.lastAutoTable.finalY + 6;
+  }
+  y += 14;
+  doc.setFont("helvetica","normal"); doc.setFontSize(10);
+  doc.line(14, y, 84, y); doc.text("TANDATANGAN PELANGGAN", 14, y+5);
+  doc.line(W-84, y, W-14, y); doc.text("TANDATANGAN SALES ADVISOR", W-84, y+5);
+  const name = (f.tab + "_" + (getv("$cust")||"BORANG")).toUpperCase().replace(/[^A-Z0-9]+/g,"_").replace(/^_|_$/g,"");
+  return new File([doc.output("blob")], name + ".pdf", { type:"application/pdf" });
+}
+$("pdf").addEventListener("click", async ()=>{
+  if (!window.jspdf) { toast("PDF belum sedia – semak internet"); return; }
+  let file; try { file = makePDF(); } catch(e) { toast("Gagal buat PDF"); return; }
+  if (navigator.canShare && navigator.canShare({ files:[file] })) {
+    try { await navigator.share({ files:[file], title:file.name }); } catch(e) {}
+    return;
+  }
+  const a = document.createElement("a"); a.href = URL.createObjectURL(file); a.download = file.name;
+  document.body.appendChild(a); a.click(); a.remove();
+  toast("PDF dimuat turun – hantar melalui WA Business");
+});
 let tt;
 function toast(t){ const el=$("toast"); el.textContent=t; el.classList.add("on"); clearTimeout(tt); tt=setTimeout(()=>el.classList.remove("on"),1800); }
 
