@@ -96,7 +96,7 @@ const F = [
   {h:"Jenis pembeli", f:[["buyer","Please tick","sel",["","FINANCE DISBURSEMENT","CASH BUYER"]]]}
  ]},
  {id:"ins", tab:"Insurans", title:"INSURANCE CONFIRMATION", secs:[
-  {h:"NCD", f:[["icom","Insurance Company"],["vno","Vehicle No"],["per","Period"],["$date","Cancel/Withdraw","date"],["ncd","NCD %"]]},
+  {h:"NCD", f:[["icom","Insurance Company"],["vno","Vehicle No"],["per","Period"],["cdate","Cancel/Withdraw","date"],["ncd","NCD %"]]},
   {h:"EXTRA BENEFIT", f:[["d1n","Additional Driver","txt",null,"ALL DRIVER"]]},
   {h:"Windscreen & Special Perils", f:[["wv","Windscreen Value"],["wp","Windscreen Premium"],["ov","Special Perils Value"],["op","Special Perils Premium"]]},
   {h:"Confirmed by", f:[["$cust","Customer Name"],["$nric","Customer NRIC"],["$date","Date","date"]]}
@@ -216,7 +216,7 @@ const PDFMAP = {
   chk:{ src:"sop.pdf", page:0, white:[[396,110,12,12]], f:[["$cust",80,119,{w:270}],["bref",404,119,{w:96,align:"center"}],["$vso",507,119,{w:96,align:"center"}]],
         ticks:(t,g)=>{ const b=(g("buyer")||"").toUpperCase(); if(b.startsWith("FINANCE")) t(207,374); if(b.startsWith("CASH")) t(433,374); } },
   ins:{ src:"sop.pdf", page:1, white:[[70,484,50,14]], label:[["SPECIAL PERILS",72,495]],
-        f:[["icom",300,120,{w:160}],["vno",300,141,{w:160}],["per",300,161,{w:160}],["$date",300,182,{w:160}],["ncd",300,203,{w:160}],["d1n",300,265,{w:160}],
+        f:[["icom",300,120,{w:160}],["vno",300,141,{w:160}],["per",300,161,{w:160}],["cdate",300,182,{w:160}],["ncd",300,203,{w:160}],["d1n",300,265,{w:160}],
            ["wv",300,451,{w:120}],["wp",300,471,{w:85}],["ov",300,492,{w:160}],["op",300,513,{w:160}],["$cust",118,624],["$nric",118,650],["$date",118,696]] },
   trd:{ src:"sop.pdf", page:2, f:[["$cust",176,52,{w:130}],["$date",176,78,{w:110}],["$cust",110,738,{w:125}],["$nric",112,762,{w:90}],["$sa",418,738,{w:120}],["sanric",380,762,{w:110}]] },
   reg:{ src:"sop.pdf", page:3, f:[["$date",100,63],["$model",292,181],["$vso",142,198],["oth",325,331,{w:150}],["a",148,390,{w:85}],["b",148,408,{w:85}],["c",148,426,{w:90}],["$cust",112,710],["$nric",112,728]],
