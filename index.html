@@ -102,6 +102,7 @@ const F = [
   {h:"Confirmed by", f:[["$cust","Customer Name"],["$nric","Customer NRIC"],["$date","Date","date"]]}
  ]},
  {id:"trd", tab:"Trade-In", title:"VEHICLE TRADE-IN CONFIRMATION", secs:[
+  {h:"Kereta baru Perodua", f:[["$model","Model Code"]]},
   {h:"Tandatangan", f:[["$cust","Customer Name"],["$nric","Customer NRIC"],["$date","Date","date"],["$sa","Sales Advisor"],["sanric","SA NRIC"]]}
  ]},
  {id:"reg", tab:"No. Plat", title:"REGISTRATION NUMBER CONFIRMATION", secs:[
@@ -218,7 +219,7 @@ const PDFMAP = {
   ins:{ src:"sop.pdf", page:1, white:[[70,484,50,14]], label:[["SPECIAL PERILS",72,495]],
         f:[["icom",300,120,{w:160}],["vno",300,141,{w:160}],["per",300,161,{w:160}],["cdate",300,182,{w:160}],["ncd",300,203,{w:160}],["d1n",300,265,{w:160}],
            ["wv",300,451,{w:120}],["wp",300,471,{w:85}],["ov",300,492,{w:160}],["op",300,513,{w:160}],["$cust",118,624],["$nric",118,650],["$date",118,696]] },
-  trd:{ src:"sop.pdf", page:2, f:[["$cust",176,52,{w:130}],["$date",176,78,{w:110}],["$cust",110,738,{w:125}],["$nric",112,762,{w:90}],["$sa",418,738,{w:120}],["sanric",380,762,{w:110}]] },
+  trd:{ src:"sop.pdf", page:2, f:[["$cust",176,52,{w:130}],["$date",176,78,{w:110}],["$model",440,274,{w:90}],["$cust",110,738,{w:125}],["$nric",112,762,{w:90}],["$sa",418,738,{w:120}],["sanric",380,762,{w:110}]] },
   reg:{ src:"sop.pdf", page:3, f:[["$date",100,63],["$model",292,181],["$vso",142,198],["oth",325,331,{w:150}],["a",148,390,{w:85}],["b",148,408,{w:85}],["c",148,426,{w:90}],["$cust",112,710],["$nric",112,728]],
         ticks:(t,g)=>{ const o=(g("opt")||"").toUpperCase(), j=(g("jpj")||"").toUpperCase();
           if(o.startsWith("RUNNING")) t(120,236); if(o.startsWith("DAFTAR")) t(120,272); if(o.startsWith("NOMBOR")) t(120,355);
