@@ -257,7 +257,7 @@ async function makePDF(){
     const types = {}; f.secs.forEach(sec=>(sec.f||[]).forEach(fd=>types[fd[0]]=fd[2]));
     for (const [k,x,b,o] of m.f) {
       let v = g(k); if (!v) continue;
-      if (types[k]==="date") v = fmtDate(v);
+      if (types[k]==="date" || /^\d{4}-\d{2}-\d{2}$/.test(v)) v = fmtDate(v);
       if (types[k]==="num") v = money(num(v));
       put(v, x, b, o);
     }
